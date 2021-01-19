@@ -3,6 +3,7 @@ require('dotenv').config();
 var nodemailer = require('nodemailer');
 var smtpTransport = require('nodemailer-smtp-transport');
 var randomToken = require('random-token').create('abcdefghijklmnopqrstuvwxzyABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789');
+var jwt = require('jsonwebtoken');
 const fs = require("fs");
 const cloudinary = require('cloudinary');
 cloudinary.config({ 
@@ -17,24 +18,29 @@ var Users = require("../model/Users.model.js");
 var bcrypt = require('bcrypt');
 var saltRounds = 10;
 module.exports = {
-    // login :async function(req, res){
-    //     try {
-    //         const {username, password}  = req.body;
-    //         const user = await Users.findOne({ username: username }).exec();
-    //         if(!user){
-    //             return res.json({ errors: { msg: 'Username không tồn tại' } });
-    //         }else{
-    //             const match = await bcrypt.compare(password, user.password);
-    //             if(match === true){
-    //                 return res.json({ success: { msg: 'Đăng nhập thành công',username : user.username } });
-    //             }else{
-    //                 return res.json({ errors: { msg: 'Mật khẩu không đúng' } });
-    //             }
-    //         }
-    //     } catch{
-    //         res.json({ errors: { msg: 'Server error' } });
-    //     }
-    // },
+    login :async function(req, res){
+        try {
+            const {email, password}  = req.body;
+            // jwt.verify(req.body.token, process.env.SECRET_KEY, function(err, decoded) {
+            //     console.log(decoded) 
+            //   });
+            const user = await Users.findOne({ email: email }).exec();
+            var older_token = jwt.sign({ userId: user._id, iat: Math.floor(Date.now() / 1000) - 30 }, process.env.SECRET_KEY);
+            if(!user){
+                return res.json({ errors: { msg: 'Username không tồn tại' } });
+            }else{
+                const match = await bcrypt.compare(password, user.password);
+                if(match === true){
+                    return res.json({ success: { msg: 'Đăng nhập thành công',token : older_token } });
+                }else{
+                    return res.json({ errors: { msg: 'Mật khẩu không đúng' } });
+                }
+            }
+        } catch (error){
+            console.log(error);
+            res.json({ errors: { msg: 'Server error' } });
+        }
+    },
     register :async function(req, res){
         try {
             const  { email, username,  phonenumber, address}  = req.body;
@@ -52,7 +58,8 @@ module.exports = {
                 });
                 return res.json({ success: { msg: 'Đăng kí thành công' } });
             }
-        } catch{
+        } catch (error){
+            console.log(error);
             res.json({ errors: { msg: 'Server error' } });
         }
     }
