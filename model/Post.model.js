@@ -8,7 +8,7 @@ var postSchema = new Schema({
     },
     avartarUser:{
         type : String,
-        required : true
+        default: 'https://res.cloudinary.com/codersx-ncq/image/upload/v1603970847/kisspng-computer-icons-user-profile-portable-network-graph-circle-svg-png-icon-free-download-5-4714-onli-5c2a3809d6e8e6.1821006915462707298803_dfp9or.jpg'
     },
     title:{
         type:String,
@@ -17,10 +17,11 @@ var postSchema = new Schema({
     desciption: {
       type: String
     },
-    imagePost:{
-        type : String,
-        required : true
+    address: {
+        type: String
     },
+    cata:[],
+    imagePost:[],
     like: [
         {
             username: {

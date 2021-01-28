@@ -21,16 +21,15 @@ module.exports = {
     login :async function(req, res){
         try {
             const {email, password}  = req.body;
-            // jwt.verify(req.body.token, process.env.SECRET_KEY, function(err, decoded) {
-            //     console.log(decoded) 
-            //   });
+           
             const user = await Users.findOne({ email: email }).exec();
-            var older_token = jwt.sign({ userId: user._id, iat: Math.floor(Date.now() / 1000) - 30 }, process.env.SECRET_KEY);
+            
             if(!user){
                 return res.json({ errors: { msg: 'Username không tồn tại' } });
             }else{
                 const match = await bcrypt.compare(password, user.password);
                 if(match === true){
+                    var older_token = jwt.sign({ userId: user._id}, process.env.SECRET_KEY );
                     return res.json({ success: { msg: 'Đăng nhập thành công',token : older_token } });
                 }else{
                     return res.json({ errors: { msg: 'Mật khẩu không đúng' } });
