@@ -30,7 +30,7 @@ module.exports = {
                 const match = await bcrypt.compare(password, user.password);
                 if(match === true){
                     var older_token = jwt.sign({ userId: user._id}, process.env.SECRET_KEY );
-                    return res.json({ success: { msg: 'Đăng nhập thành công',token : older_token } });
+                    return res.json({ success: { msg: 'Đăng nhập thành công',token : older_token,user : await Users.findOne({ email: email }).select('-password -email') } });
                 }else{
                     return res.json({ errors: { msg: 'Mật khẩu không đúng' } });
                 }

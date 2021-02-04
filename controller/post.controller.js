@@ -10,11 +10,12 @@ cloudinary.config({
 //using mongoose
 var Posts = require("../model/Post.model.js");
 var Users = require("../model/Users.model.js");
+const { Console } = require('console');
 //using bcrypt
 module.exports = {
     getPosts :async function(req, res){
         try {
-            const posts = await Posts.find();
+            const posts = await Posts.find().sort({date:-1});
             return res.json({ success: { 
                 msg: 'Get posts success',
                 posts 
@@ -34,32 +35,44 @@ module.exports = {
                 await fs.unlinkSync(req.files[i].path)
                 imagePost.push(coverImg.url);
             }
-            await Posts.create({username : req.user.username,avartarUser :req.user.avatar,title,desciption:noteProduct,address,cata:cataPro,imagePost });
-            res.json({ success: { msg: 'Đăng bài thành công' } });
+            await Posts.create({userId:req.user._id,username : req.user.username,avartarUser :req.user.avatar,title,desciption:noteProduct,address,cata:cataPro,imagePost });
+            const posts = await Posts.find().sort({date:-1});
+            res.json({ success: { msg: 'Đăng bài thành công',posts } });
+        } catch(error){
+            console.log(error);
+            res.json({ errors: { msg: 'Server error' } });
+        }
+    }
+    ,
+    deletePosts :async function(req, res){
+        try {
+            if(req.body.userId.toString() === req.user._id.toString()){
+                await Posts.findOneAndDelete({_id : req.params.id});
+                const posts = await Posts.find().sort({date:-1});
+                res.json({ success: { msg: 'Gỡ bài thành công',posts } });
+            }else{
+                res.json({ errors: { msg: 'Token không hợp lệ' } });
+            }
+        } catch(error){
+            console.log(error);
+            res.json({ errors: { msg: 'Server error' } });
+        }
+    }
+    ,
+    commentPosts :async function(req, res){
+        try {
+            const post = await Posts.findById(req.params.id);
+            req.body.username = req.user.username;
+            post.comment.unshift(req.body);
+            await Posts.findByIdAndUpdate({_id : req.params.id },{comment : post.comment });
+            const posts = await Posts.find().sort({date:-1});;
+            res.json({ success: { msg: 'Comment success',posts } });
         } catch(error){
             console.log(error);
             res.json({ errors: { msg: 'Server error' } });
         }
     }
     // ,
-    // deletePosts :async function(req, res){
-    //     try {
-    //         await Posts.findOneAndDelete({_id : req.params.id});
-    //         res.json({ success: { msg: 'Delete post success' } });
-    //     } catch{
-    //         res.json({ errors: { msg: 'Server error' } });
-    //     }
-    // },
-    // commentPosts :async function(req, res){
-    //     try {
-    //         const post = await Posts.findById(req.params.id);
-    //         post.comment.push(req.body);
-    //         await Posts.findByIdAndUpdate({_id : req.params.id },{comment : post.comment })
-    //         res.json({ success: { msg: 'Comment success' } });
-    //     } catch{
-    //         res.json({ errors: { msg: 'Server error' } });
-    //     }
-    // },
     // deleteCommentPosts :async function(req, res){
     //     try {
     //         const post = await Posts.findById(req.params.id);
@@ -77,22 +90,25 @@ module.exports = {
     ,
     likePosts :async function(req, res){
         try {
-            console.log(req.user)
-            // const post = await Posts.findById(req.params.id);
-            // const userExit = post.like.find((like) =>(
-            //     like.username === req.body.username
-            // ));
-            // if(!userExit){
-            //     post.like.push(req.body);
-            //     await Posts.findByIdAndUpdate({_id : req.params.id },{like : post.like })
-            //     res.json({ success: { msg: 'like success' } });
-            // }else{
-            //     const indexUserExit = post.like.indexOf(userExit);
-            //     post.like.splice(indexUserExit, 1);
-            //     await Posts.findByIdAndUpdate({_id : req.params.id },{like : post.like });
-            //     res.json({ success: { msg: 'unlike success' } });
-            // }
-        } catch{
+            const {username}  = req.user;
+            const post = await Posts.findById(req.params.id);
+            const userExit = post.like.find((like) =>(
+                like.username === username
+            ));
+            if(!userExit){  
+                post.like.push({username});
+                await Posts.findByIdAndUpdate({_id : req.params.id },{like : post.like })
+                const posts = await Posts.find().sort({date:-1});;
+                res.json({ success: { msg: 'like success',posts } });
+            }else{
+                const indexUserExit = post.like.indexOf(userExit);
+                post.like.splice(indexUserExit, 1);
+                await Posts.findByIdAndUpdate({_id : req.params.id },{like : post.like });
+                const posts = await Posts.find().sort({date:-1});;
+                res.json({ success: { msg: 'unlike success',posts } });
+            }
+        } catch(error){
+            console.log(error);
             res.json({ errors: { msg: 'Server error' } });
         }
     }

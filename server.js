@@ -18,10 +18,11 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 var authRoute = require('./router/auth.route');
 var postRoute = require('./router/post.route');
+var tradeRoute =require('./router/trades.route');
 
 app.use('/api/auth',authRoute);
 app.use('/api/post',postRoute);
-
+app.use('/api/trade',tradeRoute);
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`)
 })
