@@ -40,11 +40,43 @@ module.exports = {
                 titlePost : title,//người nhận
                 tradeWithPostId,//người gửi
                 tradeWithTitlePost : tradeWithPost.title,//người gửi
-                address : address,//người gửi
-                tradeWithAdress//người nhận
+                address : tradeWithAdress,//người gửi
+                tradeWithAdress :address //người nhận
             });
             const trades = await Trades.find().sort({date:-1});
             res.json({ success: { msg: 'Gửi yêu cầu thành công ',trades } });
+        } catch(error){
+            console.log(error);
+            res.json({ errors: { msg: 'Server error' } });
+        }
+    },
+    putStatusTrade :async function(req, res){
+        try {
+            
+            const trade = await Trades.findById(req.params.id);
+            if(req.user._id.toString() !== trade.userId.toString()){
+                res.json({ errors: { msg: 'Người dùng không hợp lệ' } });
+            }else{
+                await Trades.findByIdAndUpdate({_id :req.params.id},{status : req.body.status})
+                const trades = await Trades.find().sort({date:-1});
+                res.json({ success: { msg: 'Hủy yêu cầu thành công ',trades } });
+            }
+        } catch(error){
+            console.log(error);
+            res.json({ errors: { msg: 'Server error' } });
+        }
+    },
+    putStatusEchangeTrade :async function(req, res){
+        try {
+            
+            const trade = await Trades.findById(req.params.id);
+            if(req.user._id.toString() !== trade.tradeWithUserId.toString()){
+                res.json({ errors: { msg: 'Người dùng không hợp lệ' } });
+            }else{
+                await Trades.findByIdAndUpdate({_id :req.params.id},{statusWithTrade:req.body.status})
+                const trades = await Trades.find().sort({date:-1});
+                res.json({ success: { msg: 'Hủy yêu cầu thành công ',trades } });
+            }
         } catch(error){
             console.log(error);
             res.json({ errors: { msg: 'Server error' } });

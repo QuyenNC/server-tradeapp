@@ -46,6 +46,10 @@ var tradesSchema = new Schema({
         type : String,
         default: 'chờ xác nhận',
     },
+    statusWithTrade: {
+        type : String,
+        default: 'chờ xác nhận',
+    },
     date: {
       type: Date,
       default: Date.now,
