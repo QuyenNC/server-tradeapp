@@ -6,7 +6,7 @@ const port = 5000;
 const cookieParser = require('cookie-parser');
 app.use(cookieParser());
 
-// mongoose
+// // mongoose
 const connectDB = require('./config/db');
 connectDB();
 //req.body
