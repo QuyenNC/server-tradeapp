@@ -1,28 +1,27 @@
-require('dotenv').config();
-const express = require('express');
+require("dotenv").config();
+const express = require("express");
 const app = express();
-const port = 5000;
+const port = process.env.PORT || 3000;
 
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 app.use(cookieParser());
 
 // // mongoose
-const connectDB = require('./config/db');
+const connectDB = require("./config/db");
 connectDB();
 //req.body
-const bodyParser = require('body-parser')
+const bodyParser = require("body-parser");
 
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
+const authRoute = require("./router/auth.route");
+const postRoute = require("./router/post.route");
+const tradeRoute = require("./router/trades.route");
 
-var authRoute = require('./router/auth.route');
-var postRoute = require('./router/post.route');
-var tradeRoute =require('./router/trades.route');
-
-app.use('/api/auth',authRoute);
-app.use('/api/post',postRoute);
-app.use('/api/trade',tradeRoute);
+app.use("/api/auth", authRoute);
+app.use("/api/post", postRoute);
+app.use("/api/trade", tradeRoute);
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`)
-})
+  console.log(`Example app listening at http://localhost:${port}`);
+});
