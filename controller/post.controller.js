@@ -31,7 +31,7 @@ module.exports = {
       let imagePost = [];
       for (let i = 0; i < req.files.length; i++) {
         const coverImg = await cloudinary.uploader.upload(req.files[i].path);
-        await fs.unlink(req.files[i].path);
+        await fs.unlinkSync(req.files[i].path);
         imagePost.push(coverImg.url);
       }
       await Posts.create({
@@ -69,9 +69,10 @@ module.exports = {
     try {
       const post = await Posts.findById(req.params.id);
       req.body.username = req.user.username;
+      post.comment.unshift(req.body)
       await Posts.findByIdAndUpdate(
         { _id: req.params.id },
-        { comment: [...post.comment.unshift(req.body)] }
+        { comment: post.comment}
       );
       res.json({ success: { msg: "Comment success" } });
     } catch (error) {
@@ -85,9 +86,10 @@ module.exports = {
       const post = await Posts.findById(req.params.id);
       const userExit = post.like.find((like) => like.username === username);
       if (!userExit) {
+        post.like.push({ username })
         await Posts.findByIdAndUpdate(
           { _id: req.params.id },
-          { like: [...post.like.push({ username })] }
+          { like: post.like }
         );
         const posts = await Posts.find().sort({ date: -1 });
         res.json({ success: { msg: "like success", posts } });
