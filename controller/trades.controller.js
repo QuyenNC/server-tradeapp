@@ -62,10 +62,18 @@ module.exports = {
       if (req.user._id.toString() !== trade.userId.toString()) {
         res.json({ errors: { msg: "Người dùng không hợp lệ" } });
       } else {
-        await Trades.findByIdAndUpdate(
-          { _id: req.params.id },
-          { status: req.body.status }
-        );
+        if(req.body.status === 'đã nhận hàng'){
+          await Trades.findByIdAndUpdate(
+            { _id: req.params.id },
+            { statusWithTrade: req.body.status }
+          );
+        }else{
+          await Trades.findByIdAndUpdate(
+            { _id: req.params.id },
+            { statusWithTrade: req.body.status,
+            status : req.body.status  }
+          );
+        }
         const trades = await Trades.find().sort({ date: -1 });
         res.json({ success: { msg: "Hủy yêu cầu thành công ", trades } });
       }
@@ -79,10 +87,19 @@ module.exports = {
       if (req.user._id.toString() !== trade.tradeWithUserId.toString()) {
         res.json({ errors: { msg: "Người dùng không hợp lệ" } });
       } else {
-        await Trades.findByIdAndUpdate(
-          { _id: req.params.id },
-          { status: req.body.status }
-        );
+        if(req.body.status === 'đã nhận hàng'){
+          await Trades.findByIdAndUpdate(
+            { _id: req.params.id },
+            { status: req.body.status }
+          );
+        }else{
+          await Trades.findByIdAndUpdate(
+            { _id: req.params.id },
+            { statusWithTrade: req.body.status,
+            status : req.body.status  }
+          );
+        }
+       
         const trades = await Trades.find().sort({ date: -1 });
         res.json({ success: { msg: "Hủy yêu cầu thành công ", trades } });
       }
