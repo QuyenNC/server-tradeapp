@@ -11,7 +11,7 @@ const Posts = require("../model/Post.model.js");
 const Users = require("../model/Users.model.js");
 //using bcrypt
 module.exports = {
-  getPosts: async function (req, res) {
+  getPosts: async function (req, res, next) {
     try {
       const posts = await Posts.find().sort({ date: -1 });
       return res.json({
@@ -21,11 +21,10 @@ module.exports = {
         },
       });
     } catch (err) {
-      console.log(err);
-      return res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
   },
-  createPosts: async function (req, res) {
+  createPosts: async function (req, res, next) {
     try {
       const { cataPro, title, address, noteProduct } = req.body;
       let imagePost = [];
@@ -47,11 +46,10 @@ module.exports = {
       const posts = await Posts.find().sort({ date: -1 });
       res.json({ success: { msg: "Đăng bài thành công", posts } });
     } catch (error) {
-      console.log(error);
-      res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
   },
-  deletePosts: async function (req, res) {
+  deletePosts: async function (req, res, next) {
     try {
       if (req.body.userId.toString() === req.user._id.toString()) {
         await Posts.findOneAndDelete({ _id: req.params.id });
@@ -61,51 +59,44 @@ module.exports = {
         res.json({ errors: { msg: "Token không hợp lệ" } });
       }
     } catch (error) {
-      console.log(error);
-      res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
   },
-  commentPosts: async function (req, res) {
+  commentPosts: async function (req, res, next) {
     try {
       const post = await Posts.findById(req.params.id);
       req.body.username = req.user.username;
-      post.comment.unshift(req.body)
       await Posts.findByIdAndUpdate(
         { _id: req.params.id },
-        { comment: post.comment}
+        { $addToSet: { comment: req.body } }
       );
       res.json({ success: { msg: "Comment success" } });
     } catch (error) {
-      console.log(error);
-      res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
   },
-  likePosts: async function (req, res) {
+  likePosts: async function (req, res, next) {
     try {
       const { username } = req.user;
       const post = await Posts.findById(req.params.id);
       const userExit = post.like.find((like) => like.username === username);
       if (!userExit) {
-        post.like.push({ username })
         await Posts.findByIdAndUpdate(
           { _id: req.params.id },
-          { like: post.like }
+          { $addToSet: { like: username } }
         );
         const posts = await Posts.find().sort({ date: -1 });
         res.json({ success: { msg: "like success", posts } });
       } else {
-        const indexUserExit = post.like.indexOf(userExit);
-        post.like.splice(indexUserExit, 1);
         await Posts.findByIdAndUpdate(
           { _id: req.params.id },
-          { like: post.like }
+          { $pullAll: { like: userExit } }
         );
         const posts = await Posts.find().sort({ date: -1 });
         res.json({ success: { msg: "unlike success", posts } });
       }
     } catch (error) {
-      console.log(error);
-      res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
   },
 };

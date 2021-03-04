@@ -13,7 +13,7 @@ var Trades = require("../model/Trades.model.js");
 const { Console } = require("console");
 //using bcrypt
 module.exports = {
-  getTrades: async function (req, res) {
+  getTrades: async function (req, res, next) {
     try {
       const trades = await Trades.find().sort({ date: -1 });
       return res.json({
@@ -23,11 +23,10 @@ module.exports = {
         },
       });
     } catch (err) {
-      console.log(err);
-      return res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
   },
-  createTrade: async function (req, res) {
+  createTrade: async function (req, res, next) {
     try {
       const {
         _id,
@@ -54,11 +53,10 @@ module.exports = {
       const trades = await Trades.find().sort({ date: -1 });
       res.json({ success: { msg: "Gửi yêu cầu thành công ", trades } });
     } catch (error) {
-      console.log(error);
-      res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
   },
-  putStatusTrade: async function (req, res) {
+  putStatusTrade: async function (req, res, next) {
     try {
       const trade = await Trades.findById(req.params.id);
       if (req.user._id.toString() !== trade.userId.toString()) {
@@ -72,11 +70,10 @@ module.exports = {
         res.json({ success: { msg: "Hủy yêu cầu thành công ", trades } });
       }
     } catch (error) {
-      console.log(error);
-      res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
   },
-  putStatusEchangeTrade: async function (req, res) {
+  putStatusEchangeTrade: async function (req, res, next) {
     try {
       const trade = await Trades.findById(req.params.id);
       if (req.user._id.toString() !== trade.tradeWithUserId.toString()) {
@@ -90,8 +87,7 @@ module.exports = {
         res.json({ success: { msg: "Hủy yêu cầu thành công ", trades } });
       }
     } catch (error) {
-      console.log(error);
-      res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
   },
 };

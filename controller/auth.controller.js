@@ -19,7 +19,7 @@ var Users = require("../model/Users.model.js");
 var bcrypt = require("bcrypt");
 var saltRounds = 10;
 module.exports = {
-  login: async function (req, res) {
+  login: async function (req, res, next) {
     try {
       const { email, password } = req.body;
 
@@ -39,7 +39,7 @@ module.exports = {
               msg: "Đăng nhập thành công",
               token: older_token,
               user: await Users.findOne({ email: email }).select(
-                "-password -email"
+                "avatar username address date isVerified"
               ),
             },
           });
@@ -48,18 +48,17 @@ module.exports = {
         }
       }
     } catch (error) {
-      console.log(error);
-      res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
   },
-  register: async function (req, res) {
+  register: async function (req, res, next) {
     try {
       const { email, username, phonenumber, address } = req.body;
-      const userName = await Users.findOne({ username: username }).exec();
+      const userName = await Users.findOne({ username: username });
       if (userName) {
         return res.json({ errors: { msg: "Username đã tồn tại" } });
       }
-      const emailUser = await Users.findOne({ email: email }).exec();
+      const emailUser = await Users.findOne({ email: email });
       if (emailUser) {
         return res.json({ errors: { msg: "Email đã tồn tại" } });
       } else {
@@ -76,8 +75,7 @@ module.exports = {
         return res.json({ success: { msg: "Đăng kí thành công" } });
       }
     } catch (error) {
-      console.log(error);
-      res.json({ errors: { msg: "Server error" } });
+      next(error);
     }
-  }
+  },
 };
