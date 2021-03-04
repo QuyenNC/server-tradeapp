@@ -81,7 +81,7 @@ module.exports = {
       } else {
         await Trades.findByIdAndUpdate(
           { _id: req.params.id },
-          { statusWithTrade: req.body.status }
+          { status: req.body.status }
         );
         const trades = await Trades.find().sort({ date: -1 });
         res.json({ success: { msg: "Hủy yêu cầu thành công ", trades } });
